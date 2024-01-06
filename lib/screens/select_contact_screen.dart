@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sandesh/Model/ChatModel.dart';
+import 'package:sandesh/screens/create_group.dart';
 import 'package:sandesh/widgets/ButtonCard.dart';
 import 'package:sandesh/widgets/ContactCard.dart';
 
@@ -130,7 +131,12 @@ class _SelectContactScreenState extends State<SelectContactScreen> {
         itemCount: contacts.length + 2,
         itemBuilder: (context, index){
           if(index==0){
-            return const ButtonCard(icon: Icons.group, name: "New Group",);
+            return InkWell(
+              onTap: (){
+                Navigator.push(context, MaterialPageRoute(builder: (builder)=> const CreateGroupScreen()));
+              },
+              child: const ButtonCard(icon: Icons.group, name: "New Group",)
+            );
           }
           else if(index==1){
             return const ButtonCard(icon: Icons.person_add, name: "New contact",);

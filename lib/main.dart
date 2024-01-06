@@ -1,8 +1,14 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:sandesh/screens/Camera_screen.dart';
 import 'package:sandesh/screens/home_screen.dart';
 import 'package:sandesh/utils/color.dart';
 
-void main() {
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+
+  cameras = await availableCameras();
+  
   runApp(const MyApp());
 }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sandesh/pages/camera_page.dart';
 import 'package:sandesh/utils/color.dart';
 import 'package:sandesh/pages/chat_page.dart';
 
@@ -26,7 +27,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       appBar: AppBar(
         title: const Text("Sandesh"),
         actions: [
-          IconButton(onPressed: (){}, icon: const Icon(Icons.camera_alt)),
+          IconButton(
+            onPressed: (){
+              Navigator.push(context, MaterialPageRoute(builder: (builder)=> const CameraPage() ));
+            }, 
+            icon: const Icon(Icons.camera_alt)
+          ),
           IconButton(onPressed: (){}, icon: const Icon(Icons.search)),
           // IconButton(onPressed: (){}, icon: const Icon(Icons.more_vert)),
           PopupMenuButton<String>(
