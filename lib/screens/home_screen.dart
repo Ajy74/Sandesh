@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:sandesh/Model/ChatModel.dart';
 import 'package:sandesh/pages/camera_page.dart';
 import 'package:sandesh/utils/color.dart';
 import 'package:sandesh/pages/chat_page.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key,this.chatmodels, this.sourchat});
+  final List<ChatModel>? chatmodels;
+  final ChatModel? sourchat;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -112,11 +115,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
       body: TabBarView(
         controller: _tabController,
-        children: const [
+        children:  [
           // Text("Camera"),
-          ChatPage(),
-          Text("status"),
-          Text("calls"),
+          ChatPage(
+            chatmodels: widget.chatmodels,
+            sourchat: widget.sourchat,
+          ),
+          const Text("status"),
+          const Text("calls"),
         ],
       ),
     );

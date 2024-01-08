@@ -9,9 +9,10 @@ import 'package:sandesh/widgets/ReplyMessageCard.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class IndividualPage extends StatefulWidget {
-  const IndividualPage({super.key, required this.chatModel});
+  const IndividualPage({super.key, required this.chatModel, this.sourchat});
 
   final ChatModel chatModel;
+  final ChatModel? sourchat;
 
   @override
   State<IndividualPage> createState() => _IndividualPageState();
@@ -22,6 +23,7 @@ class _IndividualPageState extends State<IndividualPage> {
   bool showEmoji = false;
   TextEditingController tc = TextEditingController();
   FocusNode focusNode =  FocusNode();
+  bool sendButton =  false;
 
   late IO.Socket socket;
 
@@ -41,12 +43,22 @@ class _IndividualPageState extends State<IndividualPage> {
 
   void connect(){
     socket = IO.io("http://192.168.112.122:3000",<String,dynamic>{
-      "transport":["websocket"],
+      "transports":["websocket"],
       "autoConnect":false
     });
 
     socket.connect();
     socket.onConnect((data) => print("App connected with socket !"));
+
+    socket.emit("signin", widget.sourchat!.id);
+  }
+
+  void sendMessage(String msg, int sourceId, int targetId){
+    socket.emit("message",{
+      "msg":msg,
+      "sourceId":sourceId,
+      "targetId":targetId,
+    });
   }
 
 
@@ -193,6 +205,7 @@ class _IndividualPageState extends State<IndividualPage> {
                 Container(
                   height: MediaQuery.of(context).size.height - 155,
                   child: ListView(
+                    shrinkWrap: true,
                     children: [
                       OwnMessageCard(),
                       ReplyMessageCard(),
@@ -243,6 +256,18 @@ class _IndividualPageState extends State<IndividualPage> {
                                   maxLines: 5,
                                   minLines: 1,
                                   cursorColor: secondary,
+                                  onChanged: (value){
+                                    if(value.isNotEmpty){
+                                      setState(() {
+                                        sendButton = true;
+                                      });
+                                    }
+                                    else{
+                                      setState(() {
+                                        sendButton = false;
+                                      });
+                                    }
+                                  },
                                   decoration: InputDecoration(
                                     border: InputBorder.none,
                                     hintText: "Type a message",
@@ -293,8 +318,19 @@ class _IndividualPageState extends State<IndividualPage> {
                                 radius: 25,
                                 backgroundColor: secondary,
                                 child: IconButton(
-                                  onPressed: (){}, 
-                                  icon: const Icon(Icons.mic, color: Colors.white,),
+                                  onPressed: (){
+                                    if(sendButton){
+                                      sendMessage(
+                                        tc.text, 
+                                        widget.sourchat!.id!, 
+                                        widget.chatModel.id!
+                                      );
+                                      tc.clear();
+                                    }
+                                  }, 
+                                  icon: sendButton 
+                                    ?const Icon(Icons.send, color: Colors.white,) 
+                                    :const Icon(Icons.mic, color: Colors.white,),
                                 ),
                               )
                             ),

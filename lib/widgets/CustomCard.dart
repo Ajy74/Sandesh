@@ -4,9 +4,10 @@ import 'package:sandesh/Model/ChatModel.dart';
 import 'package:sandesh/screens/individual_page.dart';
 
 class CustomCard extends StatelessWidget {
-  const CustomCard({super.key, required this.chatModel});
+  const CustomCard({super.key, required this.chatModel, this.sourchat});
 
   final ChatModel chatModel;
+  final ChatModel? sourchat;
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +15,10 @@ class CustomCard extends StatelessWidget {
       onTap: (){
         Navigator.push(
           context, 
-          MaterialPageRoute(builder: (context)=>IndividualPage(chatModel: chatModel,))
+          MaterialPageRoute(builder: (context)=>IndividualPage(
+            chatModel: chatModel,
+            sourchat: sourchat,
+          ))
         );
       },
       child: ListTile(

@@ -16,11 +16,11 @@ class OwnMessageCard extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 15,vertical: 5),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(
             topLeft: Radius.elliptical(25, 20),
-            // topRight: Radius.elliptical(35, 30),
+            topRight: Radius.elliptical(35, 30),
             // topRight: Radius.circular(18),
-            bottomLeft: Radius.circular(18),
-            // bottomLeft: Radius.elliptical(35, 30),
-            bottomRight: Radius.elliptical(35, 30),
+            // bottomLeft: Radius.circular(18),
+            bottomLeft: Radius.elliptical(35, 30),
+            // bottomRight: Radius.elliptical(35, 30),
           )),
           color: const Color(0xFFdcf8c6),
           child: Stack(

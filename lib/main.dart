@@ -2,6 +2,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:sandesh/screens/Camera_screen.dart';
 import 'package:sandesh/screens/home_screen.dart';
+import 'package:sandesh/screens/login_screen.dart';
 import 'package:sandesh/utils/color.dart';
 
 void main() async{
@@ -31,7 +32,7 @@ class MyApp extends StatelessWidget {
           foregroundColor: Colors.white
         ),
       ),
-      home: const HomeScreen(),
+      home: const LoginScreen(),
     );
   }
 }

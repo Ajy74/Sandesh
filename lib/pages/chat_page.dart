@@ -5,7 +5,9 @@ import 'package:sandesh/utils/color.dart';
 import 'package:sandesh/widgets/CustomCard.dart';
 
 class ChatPage extends StatefulWidget {
-  const ChatPage({super.key});
+  const ChatPage({super.key,this.chatmodels, this.sourchat});
+  final List<ChatModel>? chatmodels;
+  final ChatModel? sourchat;
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -52,8 +54,11 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: ListView.builder(
-        itemCount: chats.length,
-        itemBuilder: (context, index)=>CustomCard(chatModel:chats[index]),
+        itemCount: widget.chatmodels!.length,
+        itemBuilder: (context, index)=>CustomCard(
+          chatModel:widget.chatmodels![index],
+          sourchat: widget.sourchat,
+        ),
       ),
 
       floatingActionButton: FloatingActionButton(
