@@ -4,6 +4,9 @@ import 'package:flutter_svg/svg.dart';
 import 'package:sandesh/Model/ChatModel.dart';
 import 'package:sandesh/utils/color.dart';
 import 'package:flutter/foundation.dart' as foundation;
+import 'package:sandesh/widgets/OwnMessegeCard.dart';
+import 'package:sandesh/widgets/ReplyMessageCard.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class IndividualPage extends StatefulWidget {
   const IndividualPage({super.key, required this.chatModel});
@@ -20,10 +23,13 @@ class _IndividualPageState extends State<IndividualPage> {
   TextEditingController tc = TextEditingController();
   FocusNode focusNode =  FocusNode();
 
+  late IO.Socket socket;
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    connect();
     focusNode.addListener(() { 
       if(focusNode.hasFocus){
         setState(() {
@@ -33,247 +39,283 @@ class _IndividualPageState extends State<IndividualPage> {
     });
   }
 
+  void connect(){
+    socket = IO.io("http://192.168.112.122:3000",<String,dynamic>{
+      "transport":["websocket"],
+      "autoConnect":false
+    });
+
+    socket.connect();
+    socket.onConnect((data) => print("App connected with socket !"));
+  }
+
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.blueGrey,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        leadingWidth: 70,
-        titleSpacing: 0,
-        leading: InkWell(
-          onTap: (){
-            Navigator.pop(context);
-          },
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.arrow_back, size: 24,),
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: Colors.blueGrey,
-                 child: SvgPicture.asset(
-                  widget.chatModel.isGroup ? "assets/groups.svg" : "assets/person.svg" , 
-                  alignment: Alignment.center, 
-                  height: 30, 
-                  width: 30, 
-                  color: Colors.white
-                ),
-              ),
-            ],
-          ),
+    return Stack(
+      children: [
+        Image.asset(
+            "assets/whatsapp_Back.png",
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height,
+          fit: BoxFit.cover,
         ),
-
-        title: InkWell(
-          onTap: (){
-
-          },
-          child: Container(
-            margin: const EdgeInsets.all(5),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Text(
-                  widget.chatModel.name,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    overflow: TextOverflow.ellipsis
-                  ),
-                ),
-            
-                const Text(
-                  "last seen today at 12:10",
-                  style: TextStyle(
-                    fontSize: 11,
-                  ),
-                )
-              ],
-            ),
-          ),
-        ),
-
-        actions: [
-          IconButton(
-            onPressed: (){}, 
-            icon: const Icon(Icons.videocam),
-          ),
-          IconButton(
-            onPressed: (){}, 
-            icon: const Icon(Icons.call),
-          ),
-
-          PopupMenuButton<String>(
-            // color: Colors.white,
-            offset: const Offset(0, 10),
-            position: PopupMenuPosition.under,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            surfaceTintColor: Colors.white,
-            shadowColor: Colors.grey.withOpacity(.23),
-            onSelected: (value){
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text(value.toString()),
-                duration: const Duration(seconds: 1),
-                action: SnackBarAction(
-                  label: 'ACTION',
-                  onPressed: () { },
-                ),
-              ));
-            },
-            itemBuilder: (BuildContext context){
-              return const [
-                PopupMenuItem(
-                  value: "View contact",
-                  child: Text("View contact",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w400),),
-                ),
-
-
-                PopupMenuItem(
-                  value: "Media, links and docs",
-                  child: Text("Media, links and docs",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w400)),
-                ),
-
-                PopupMenuItem(
-                  value: "Sandesh web",
-                  child: Text("Sandesh web",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w400)),
-                ),
-
-                PopupMenuItem(
-                  value: "Search",
-                  child: Text("Search",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w400)),
-                ),
-
-                PopupMenuItem(
-                  value: "Mute notification",
-                  child: Text("Mute notification",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w400)),
-                ),
-
-                PopupMenuItem(
-                  value: "Wallpaper",
-                  child: Text("Wallpaper",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w400)),
-                ),
-              ];
-            }
-          )
-        ],
-      ),
-
-      body: Container(
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
-        child: Stack(
-          children: [
-            ListView(
-
-            ),
-
-            WillPopScope(
-              onWillPop: (){
-                if(showEmoji){
-                  setState(() {
-                    showEmoji = false;
-                  });
-                }
-                else{
-                  Navigator.pop(context);
-                }
-
-                return Future.value(false);
+        Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            automaticallyImplyLeading: false,
+            leadingWidth: 70,
+            titleSpacing: 0,
+            leading: InkWell(
+              onTap: (){
+                Navigator.pop(context);
               },
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Row(
-                      children: [
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width - 55,
-                          child: Card(
-                            margin: const EdgeInsets.only(left: 3,right: 2,bottom: 8),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25)
-                            ),
-                            child: TextFormField(
-                              controller: tc,
-                              focusNode: focusNode,
-                              textAlignVertical: TextAlignVertical.center,
-                              keyboardType: TextInputType.multiline,
-                              maxLines: 5,
-                              minLines: 1,
-                              cursorColor: secondary,
-                              decoration: InputDecoration(
-                                border: InputBorder.none,
-                                hintText: "Type a message",
-                                prefixIcon: IconButton(
-                                  onPressed: (){
-                                    focusNode.unfocus();
-                                    focusNode.canRequestFocus = false;
-                                    setState(() {
-                                      showEmoji = !showEmoji;
-                                    });
-                                  }, 
-                                  icon: const Icon(Icons.emoji_emotions_outlined, color: primary,),
-                                ),
-                                suffixIcon: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      onPressed: (){
-                                        if(showEmoji){
-                                          setState(() {
-                                            showEmoji = false;
-                                          });
-                                        }
-                                        showModalBottomSheet(
-                                          backgroundColor: Colors.transparent,
-                                          context: context, 
-                                          builder: (builder){
-                                            return attachmentSheet();
-                                          }
-                                        );
-                                      }, 
-                                      icon: const Icon(Icons.attach_file, color: primary,),
-                                    ),
-                                    IconButton(
-                                      onPressed: (){}, 
-                                      icon: const Icon(Icons.camera_alt,color: primary,),
-                                    ),
-                                  ],
-                                ),
-                                contentPadding: const EdgeInsets.all(5)
-                              ),
-                            )
-                          )
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(right: 3,left: 2,bottom: 8),
-                          child: CircleAvatar(
-                            radius: 25,
-                            backgroundColor: secondary,
-                            child: IconButton(
-                              onPressed: (){}, 
-                              icon: const Icon(Icons.mic, color: Colors.white,),
-                            ),
-                          )
-                        ),
-                      ],
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.arrow_back, size: 24,),
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.blueGrey,
+                     child: SvgPicture.asset(
+                      widget.chatModel.isGroup ? "assets/groups.svg" : "assets/person.svg" , 
+                      alignment: Alignment.center, 
+                      height: 30, 
+                      width: 30, 
+                      color: Colors.white
                     ),
-              
-                    showEmoji ? 
-                      SizedBox(
-                      height: 255,
-                      child: emojiSelector()
-                    ) : Container() ,
+                  ),
+                ],
+              ),
+            ),
+        
+            title: InkWell(
+              onTap: (){
+        
+              },
+              child: Container(
+                margin: const EdgeInsets.all(5),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.chatModel.name,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        overflow: TextOverflow.ellipsis
+                      ),
+                    ),
+                
+                    const Text(
+                      "last seen today at 12:10",
+                      style: TextStyle(
+                        fontSize: 11,
+                      ),
+                    )
                   ],
                 ),
               ),
             ),
-
-          ],
+        
+            actions: [
+              IconButton(
+                onPressed: (){}, 
+                icon: const Icon(Icons.videocam),
+              ),
+              IconButton(
+                onPressed: (){}, 
+                icon: const Icon(Icons.call),
+              ),
+        
+              PopupMenuButton<String>(
+                // color: Colors.white,
+                offset: const Offset(0, 10),
+                position: PopupMenuPosition.under,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                surfaceTintColor: Colors.white,
+                shadowColor: Colors.grey.withOpacity(.23),
+                onSelected: (value){
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(value.toString()),
+                    duration: const Duration(seconds: 1),
+                    action: SnackBarAction(
+                      label: 'ACTION',
+                      onPressed: () { },
+                    ),
+                  ));
+                },
+                itemBuilder: (BuildContext context){
+                  return const [
+                    PopupMenuItem(
+                      value: "View contact",
+                      child: Text("View contact",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w400),),
+                    ),
+        
+        
+                    PopupMenuItem(
+                      value: "Media, links and docs",
+                      child: Text("Media, links and docs",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w400)),
+                    ),
+        
+                    PopupMenuItem(
+                      value: "Sandesh web",
+                      child: Text("Sandesh web",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w400)),
+                    ),
+        
+                    PopupMenuItem(
+                      value: "Search",
+                      child: Text("Search",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w400)),
+                    ),
+        
+                    PopupMenuItem(
+                      value: "Mute notification",
+                      child: Text("Mute notification",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w400)),
+                    ),
+        
+                    PopupMenuItem(
+                      value: "Wallpaper",
+                      child: Text("Wallpaper",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w400)),
+                    ),
+                  ];
+                }
+              )
+            ],
+          ),
+        
+          body: Container(
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width,
+            
+            child: Stack(
+              children: [
+                Container(
+                  height: MediaQuery.of(context).size.height - 155,
+                  child: ListView(
+                    children: [
+                      OwnMessageCard(),
+                      ReplyMessageCard(),
+                      OwnMessageCard(),
+                      OwnMessageCard(),
+                      ReplyMessageCard(),
+                      OwnMessageCard(),
+                      ReplyMessageCard(),
+                      OwnMessageCard(),
+                      ReplyMessageCard(),
+                    ],
+                  ),
+                ),
+          
+                WillPopScope(
+                  onWillPop: (){
+                    if(showEmoji){
+                      setState(() {
+                        showEmoji = false;
+                      });
+                    }
+                    else{
+                      Navigator.pop(context);
+                    }
+          
+                    return Future.value(false);
+                  },
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width - 55,
+                              child: Card(
+                                margin: const EdgeInsets.only(left: 5,right: 2,bottom: 8),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(25)
+                                ),
+                                color: Colors.white,
+                                child: TextFormField(
+                                  controller: tc,
+                                  focusNode: focusNode,
+                                  textAlignVertical: TextAlignVertical.center,
+                                  keyboardType: TextInputType.multiline,
+                                  maxLines: 5,
+                                  minLines: 1,
+                                  cursorColor: secondary,
+                                  decoration: InputDecoration(
+                                    border: InputBorder.none,
+                                    hintText: "Type a message",
+                                    prefixIcon: IconButton(
+                                      onPressed: (){
+                                        focusNode.unfocus();
+                                        focusNode.canRequestFocus = false;
+                                        setState(() {
+                                          showEmoji = !showEmoji;
+                                        });
+                                      }, 
+                                      icon: const Icon(Icons.emoji_emotions_outlined, color: primary,),
+                                    ),
+                                    suffixIcon: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          onPressed: (){
+                                            if(showEmoji){
+                                              setState(() {
+                                                showEmoji = false;
+                                              });
+                                            }
+                                            showModalBottomSheet(
+                                              backgroundColor: Colors.transparent,
+                                              context: context, 
+                                              builder: (builder){
+                                                return attachmentSheet();
+                                              }
+                                            );
+                                          }, 
+                                          icon: const Icon(Icons.attach_file, color: primary,),
+                                        ),
+                                        IconButton(
+                                          onPressed: (){}, 
+                                          icon: const Icon(Icons.camera_alt,color: primary,),
+                                        ),
+                                      ],
+                                    ),
+                                    contentPadding: const EdgeInsets.all(5)
+                                  ),
+                                )
+                              )
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 3,left: 2,bottom: 8),
+                              child: CircleAvatar(
+                                radius: 25,
+                                backgroundColor: secondary,
+                                child: IconButton(
+                                  onPressed: (){}, 
+                                  icon: const Icon(Icons.mic, color: Colors.white,),
+                                ),
+                              )
+                            ),
+                          ],
+                        ),
+                  
+                        showEmoji ? 
+                          SizedBox(
+                          height: 255,
+                          child: emojiSelector()
+                        ) : Container() ,
+                      ],
+                    ),
+                  ),
+                ),
+          
+              ],
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 
