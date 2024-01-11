@@ -2,6 +2,7 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:sandesh/Model/ChatModel.dart';
+import 'package:sandesh/Model/MessageModel.dart';
 import 'package:sandesh/utils/color.dart';
 import 'package:flutter/foundation.dart' as foundation;
 import 'package:sandesh/widgets/OwnMessegeCard.dart';
@@ -24,6 +25,8 @@ class _IndividualPageState extends State<IndividualPage> {
   TextEditingController tc = TextEditingController();
   FocusNode focusNode =  FocusNode();
   bool sendButton =  false;
+  List<MessageModel> messageList = [];
+  ScrollController _scrollController = ScrollController();
 
   late IO.Socket socket;
 
@@ -48,16 +51,35 @@ class _IndividualPageState extends State<IndividualPage> {
     });
 
     socket.connect();
-    socket.onConnect((data) => print("App connected with socket !"));
 
     socket.emit("signin", widget.sourchat!.id);
+
+    socket.onConnect((data) {
+      socket.on("message", (data) {
+        // print(data);
+        setMessage("destination", data["msg"]);
+        _scrollController.animateTo(_scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+      });
+    });
+
   }
 
   void sendMessage(String msg, int sourceId, int targetId){
+    setMessage("source", msg);
     socket.emit("message",{
       "msg":msg,
       "sourceId":sourceId,
       "targetId":targetId,
+    });
+  }
+
+  void setMessage(String type, String msg){
+    MessageModel messageModel = MessageModel(
+      message: msg, type: type, time: DateTime.now().toString().substring(10, 16)
+    );
+    setState(() {
+      messageList.add(messageModel);
     });
   }
 
@@ -200,23 +222,31 @@ class _IndividualPageState extends State<IndividualPage> {
             height: MediaQuery.of(context).size.height,
             width: MediaQuery.of(context).size.width,
             
-            child: Stack(
+            child: Column(
               children: [
-                Container(
-                  height: MediaQuery.of(context).size.height - 155,
-                  child: ListView(
-                    shrinkWrap: true,
-                    children: [
-                      OwnMessageCard(),
-                      ReplyMessageCard(),
-                      OwnMessageCard(),
-                      OwnMessageCard(),
-                      ReplyMessageCard(),
-                      OwnMessageCard(),
-                      ReplyMessageCard(),
-                      OwnMessageCard(),
-                      ReplyMessageCard(),
-                    ],
+                Expanded(
+                  child: Container(
+                    // height: MediaQuery.of(context).size.height - 155,
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: messageList.length+1,
+                      controller: _scrollController,
+                      itemBuilder: (context, index){
+                        if(index == messageList.length){
+                          return Container(height: 60,);
+                        }
+                        if(messageList[index].type == "source"){
+                          return OwnMessageCard(
+                            msg: messageList[index].message,
+                            time: messageList[index].time,
+                          );
+                        }
+                        return ReplyMessageCard(
+                          msg: messageList[index].message,
+                          time: messageList[index].time,
+                        );
+                      },
+                    ),
                   ),
                 ),
           
@@ -320,12 +350,21 @@ class _IndividualPageState extends State<IndividualPage> {
                                 child: IconButton(
                                   onPressed: (){
                                     if(sendButton){
+                                      _scrollController.animateTo(
+                                        _scrollController.position.maxScrollExtent,
+                                        duration: const Duration(milliseconds: 300),
+                                        curve: Curves.easeOut
+                                      );
+
                                       sendMessage(
                                         tc.text, 
                                         widget.sourchat!.id!, 
                                         widget.chatModel.id!
                                       );
                                       tc.clear();
+                                      setState(() {
+                                        sendButton =  false;
+                                      });
                                     }
                                   }, 
                                   icon: sendButton 
