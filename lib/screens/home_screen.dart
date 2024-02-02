@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sandesh/Model/ChatModel.dart';
 import 'package:sandesh/pages/camera_page.dart';
+import 'package:sandesh/pages/status_page.dart';
 import 'package:sandesh/utils/color.dart';
 import 'package:sandesh/pages/chat_page.dart';
 
@@ -121,7 +122,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             chatmodels: widget.chatmodels,
             sourchat: widget.sourchat,
           ),
-          const Text("status"),
+          StatusPage(),
           const Text("calls"),
         ],
       ),
